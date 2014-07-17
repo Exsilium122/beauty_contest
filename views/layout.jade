@@ -1,0 +1,16 @@
+doctype html
+html
+    head
+        title=title
+        link(rel='stylesheet', href='/stylesheets/style.css')
+        script(src='/javascripts/jquery-2.1.1.min.js')
+        script(src='/javascripts/knockout-3.1.0.js')
+        script(src='/javascripts/knockout.mapping-2.4.1.js')
+        script(src='/javascripts/sammy-0.7.5.min.js')
+        script(src='/javascripts/app/dto.js')
+        block scripts
+    body
+    div#header
+    div#content
+        block content
+    div#footer
