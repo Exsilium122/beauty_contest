@@ -1,0 +1,26 @@
+extends layout
+
+block scripts
+
+block content
+    div#companyList(data-bind='with: companies')
+        h1 Companies:
+        table
+            thead: tr
+                th Name
+                th City
+                th Phone no
+                th
+            tbody(data-bind='foreach: $root.companies')
+                tr(data-bind='click: $root.goToDetail')
+                    td(data-bind='text: name')
+                    td(data-bind='text: city')
+                    td(data-bind='text: phone')
+                    td: a(href='#', data-bind='click: $root.removeCompany') Delete
+        button(data-bind='click: $root.addCompany') Add
+    div#companyDetails(data-bind='with: companyDetails')
+        h1 Company deatils:
+
+    script(src='/javascripts/app/company.js')
+
+
