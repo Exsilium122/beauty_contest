@@ -3,23 +3,84 @@ extends layout
 block scripts
 
 block content
-    div#companyList(data-bind='with: companies')
+    //view: company list
+    #companyList(data-bind='visible: navigation() === "list"', style='display: none;')
         h1 Companies:
-        table
+        table.table.table-striped.table-hover
             thead: tr
                 th Name
                 th City
                 th Phone no
                 th
-            tbody(data-bind='foreach: $root.companies')
+            tbody(data-bind='foreach: companies')
                 tr(data-bind='click: $root.goToDetail')
                     td(data-bind='text: name')
-                    td(data-bind='text: city')
+                    td(data-bind='text: address.city')
                     td(data-bind='text: phone')
-                    td: a(href='#', data-bind='click: $root.removeCompany') Delete
-        button(data-bind='click: $root.addCompany') Add
-    div#companyDetails(data-bind='with: companyDetails')
-        h1 Company deatils:
+                    td: a(href='#', data-bind='click: $root.removeCompanyQuestion, clickBubble: false') Delete
+        button.btn.btn-default.col-sm-1(data-bind='click: addCompany') Add
+    //view: details about one company, employees and notes
+    #companyDetails(data-bind='visible: navigation() === "company"', style='display: none;')
+        ul#companyTab.nav.nav-tabs(role='tablist')
+            li.active: a(href='#company',role='tab',data-toggle='tab') Company details
+            li: a(href='#employees',role='tab',data-toggle='tab') Employees
+            li: a(href='#notes',role='tab',data-toggle='tab') Notes
+        .tab-content
+            #company.tab-pane.active
+                form.form-horizontal
+                    .form-group
+                        label.col-sm-2.control-label(for=cname) Name:
+                        .col-sm-10: input#cname.form-control(type=text, data-bind='value: companyDetails.name', placeholder='Enter name')
+                    .form-group
+                        label.col-sm-2.control-label(for=curl) www:
+                        .col-sm-10: input#curl.form-control(type=text, data-bind='value: companyDetails.url', placeholder='Enter www')
+                    #caddress
+                        .form-group
+                            label.col-sm-2.control-label(for=cstreet) Street:
+                            .col-sm-10: input#cstreet.form-control(type=text, data-bind='value: companyDetails.address.street', placeholder='Enter street')
+                        .form-group
+                            label.col-sm-2.control-label(for=cstreetNo) No:
+                            .col-sm-10: input#cstreetNo.form-control(type=text, data-bind='value: companyDetails.address.streetNo', placeholder='Enter street number')
+                        .form-group
+                            label.col-sm-2.control-label(for=capartmentNo) Apartment:
+                            .col-sm-10: input#capartmentNo.form-control(type=text, data-bind='value: companyDetails.address.apartmentNo', placeholder='Enter apartment number')
+                        .form-group
+                            label.col-sm-2.control-label(for=ccity) City:
+                            .col-sm-10: input#ccity.form-control(type=text, data-bind='value: companyDetails.address.city', placeholder='Enter city')
+            #employees.tab-pane
+                .employee(data-bind='foreach: companyDetails.employees')
+                    label.emp_name Name:
+                    input.emp_name(type=text, data-bind='value: name', placeholder='Enter name')
+                    label.emp_title Title:
+                    input.emp_title(type=text, data-bind='value: title', placeholder='Enter title')
+                    label.emp_phone Phone:
+                    input.emp_phone(type=text, data-bind='value: phoneNo', placeholder='Enter phone no')
+                    label.emp_mail E-mail:
+                    input.emp_mail(type=text, data-bind='value: email', placeholder='Enter e-mail')
+            #notes.tab-pane
+                .notes(data-bind='foreach: companyDetails.notes')
+                    label.note_date Date:
+                    input.note_date(type=text, data-bind='value: date', placeholder='Enter date')
+                    label.note_text Text:
+                    textarea.note_text(data-bind='value: text', placeholder='Enter note')
+        button.btn.btn-primary.col-sm-1(type='button', data-bind='click: saveCompanyDetails') Save
+        button.btn.btn-warning.col-sm-1(type='button', data-bind='click: cancelCompanyChanges') Cancel
+
+
+    //modal dialogs
+    #yesNoModal.modal.fade(tabindex='-1',role="dialog",aria-labelledby="myModalLabel",aria-hidden='true')
+        .modal-dialog
+            .modal-content
+                .modal-header
+                    button.close(type='button', data-dismiss='modal')
+                        span(aria-hidden='true') &times;
+                        span.sr-only Close
+                    h4#deleteCompanyLabel.modal-title(data-bind='text:modal.title')
+                .modal-body
+                    p(data-bind='text: modal.message')
+                .modal-footer
+                    button.btn.btn-default(type='button',data-dismiss='modal', data-bind='text: modal.cancelText')
+                    button.btn.btn-danger(type='button',data-dismiss='modal',data-bind='text: modal.actionText, click: modal.actionFunc()')
 
     script(src='/javascripts/app/company.js')
 
