@@ -6,3 +6,17 @@ body {
 a {
   color: #00B7FF;
 }
+
+#companyDetails .tab-pane {
+    margin-top: 10px;
+}
+
+#companyDetails button.save,
+#companyDetails button.cancel {
+    margin-right: 10px;
+}
+
+#companyDetails button.addEmployee,
+#companyDetails button.addNote {
+    margin: 10px;
+}
