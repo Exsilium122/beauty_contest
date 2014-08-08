@@ -17,7 +17,12 @@ router.get('/company', function(req, res) {
 router.post('/company', function(req, res) {
 //        var result = db.collection('companies').save(req.body);
 //        res.json(result);
-        res.json(req.body);
+    var company = req.body;
+    var notes = company.notes;
+    for (var i=0; i<notes.length; i++) {
+        notes[i].date = new Date(notes[i].date);
+    }
+    res.json(req.body);
 });
 
     //get one company

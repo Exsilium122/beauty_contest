@@ -5,7 +5,7 @@ mirakel.CompanyListModel = function() {
     var self = this;
     self.companies = ko.mapping.fromJS([]);
     self.companyDetails = ko.mapping.fromJS(new DTO.Company(), mirakel.mappingClean);
-    self.navigation = ko.observable();
+    self.navigation = ko.observable('');
 
     self.ynModal = new YnModal();
 
@@ -33,9 +33,9 @@ mirakel.CompanyListModel = function() {
 
     //save company
     self.saveCompanyDetails = function() {
-        var pobj = ko.mapping.toJS(self.companyDetails);
-//        pobj.notes = mirakel.filterCahngeitems(pobj.notes);
-//        pobj.employees = mirakel.filterCahngeitems(pobj.employees);
+        var pobj = mirakel.toJsWithDirtyFlag(self.companyDetails);
+        pobj.notes = mirakel.arrayFilterChangedItems(pobj.notes);
+        pobj.employees = mirakel.arrayFilterChangedItems(pobj.employees);
         $.post('/company', pobj)
             .done(function() {
                 alert( "second success" );
@@ -84,8 +84,8 @@ mirakel.CompanyListModel = function() {
     Sammy(function() {
         //list of all companies
         this.get('#company', function() {
-            self.navigation('list');
             ko.mapping.fromJS(new DTO.Company(), self.companyDetails); //clear old company details so they will not blink before new data is loded
+            self.navigation('list');
             $.get("/company", {}, function(data) {ko.mapping.fromJS(data, self.companies);} );
         });
         //new company to be added
@@ -128,6 +128,7 @@ $('#companyTab a').click(function (e) {
     e.preventDefault();
     $(this).tab('show');
 });
+//TweenLite.set($('#animContent'), {perspective:700});
 
 ko.applyBindings(new mirakel.CompanyListModel());
 
