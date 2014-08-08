@@ -1,8 +1,7 @@
 var mirakel = mirakel || {};
 
 //KO EXTENSIONS
-//add support for dirtyFlag serialization
-ko.mapping.defaultOptions().include = ["_destroy", "isDirty"];
+
 /**
  * Dirty flag suppor for KO
  * @param root - element to be watched for changes
@@ -11,7 +10,7 @@ ko.mapping.defaultOptions().include = ["_destroy", "isDirty"];
  */
 ko.dirtyFlag = function (root, isInitiallyDirty) {
     var result = function () {},
-        _initialState = ko.observable(ko.toJSON(root)),
+        _initialState = ko.observable(ko.mapping.toJSON(root)),
         _isInitiallyDirty = ko.observable(isInitiallyDirty);
 
     result.isDirty = ko.computed(function () {
@@ -49,6 +48,37 @@ ko.bindingHandlers.datePicker = {
         var value =  valueAccessor();
         var picker = $(element);
         picker.data("DateTimePicker").setDate(value());
+    }
+};
+ko.bindingHandlers.animatedVisible = {
+    // Update the control whenever the view model changes
+    update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
+        var value =  valueAccessor();
+        if(value) {
+            TweenMax.fromTo(element, 1,
+                {rotationY: -90, transformOrigin:"0% 50% 0"},
+                {rotationY: 0, transformOrigin: "0% 50% 0",
+                    onStart: function () {
+                        element.style.zIndex = 2;
+                        element.style.display = '';
+                    }
+//                    ,onComplete: function () {
+//                        element.style.display = 'none';
+//                    }
+                }
+            );
+        } else {
+            TweenMax.fromTo(element, 1,
+                {rotationY: 0, transformOrigin:"0% 50% 0"},
+                {rotationY:128,transformOrigin:"0% 50% 0"
+                    , onStart: function() {
+                        element.style.zIndex = 1;
+                    }
+                    , onComplete: function() {
+                        element.style.display = 'none';
+                    }
+            });
+        }
     }
 };
 
@@ -104,6 +134,12 @@ ko.bindingHandlers.datePicker = {
 
 //utilities
 (function() {
+    var mapDirty = {'include': ["isDirty"]};
+
+    mirakel.toJsWithDirtyFlag = function(koObject) {
+        return ko.mapping.toJS(koObject, mapDirty);
+    }
+
     /**
      * Resets dirty flag for each element of array
      * @param arr - array to be processed
@@ -150,5 +186,6 @@ ko.bindingHandlers.datePicker = {
             mirakel.koArrayRemoveItem(arr, item);
         };
     };
+
 })();
 

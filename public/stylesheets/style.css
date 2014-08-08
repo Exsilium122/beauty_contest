@@ -20,3 +20,13 @@ a {
 #companyDetails button.addNote {
     margin: 10px;
 }
+
+#animContent {
+    perspective: 700px;
+}
+
+#companyDetails,
+#companyList {
+    position: absolute;
+    width: 100%;
+}
