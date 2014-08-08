@@ -1,31 +1,31 @@
-mirakel = {};
+var mirakel = mirakel || {};
+
 mirakel.CompanyListModel = function() {
     /*DATA*/
     var self = this;
-    self.companies = ko.observableArray();
-    self.companyDetails = ko.observable(new DTO.Company());
+    self.companies = ko.mapping.fromJS([]);
+    self.companyDetails = ko.mapping.fromJS(new DTO.Company(), mirakel.mappingClean);
     self.navigation = ko.observable();
 
     self.ynModal = new YnModal();
-    self.companyToBeRemoved;
 
     /*METHODS*/
     //remove company confirmation dialog
     self.removeCompanyQuestion = function(company) {
-        self.companyToBeRemoved = company;
         self.ynModal.openModal(
             "Confirm company removal",
-            "Do you want to remove "+company.name+" company?",
+            "Do you want to remove "+company.name()+" company?",
             "Cancel",
             "Remove",
-            self.removeCompany
-            );
+            self.removeCompany(company)
+        );
     };
     //remove company
-    self.removeCompany = function() {
-        self.companies.remove(self.companyToBeRemoved);
-        //TODO remove from server
-        self.companyToBeRemoved = undefined;
+    self.removeCompany = function(company) {
+        return function () {
+            self.companies.remove(company);
+            //TODO remove from server
+        };
     }
 
     //add new company
@@ -33,7 +33,9 @@ mirakel.CompanyListModel = function() {
 
     //save company
     self.saveCompanyDetails = function() {
-        var pobj = ko.toJS(self.companyDetails());
+        var pobj = ko.mapping.toJS(self.companyDetails);
+//        pobj.notes = mirakel.filterCahngeitems(pobj.notes);
+//        pobj.employees = mirakel.filterCahngeitems(pobj.employees);
         $.post('/company', pobj)
             .done(function() {
                 alert( "second success" );
@@ -47,7 +49,7 @@ mirakel.CompanyListModel = function() {
     self.cancelCompanyChangesQuestion = function() {
         self.ynModal.openModal(
             "Confirm cancellation of changes.",
-                "Do you want to cancel all the changes?",
+            "Do you want to cancel all the changes?",
             "No",
             "Yes",
             self.cancelCompanyChanges
@@ -57,32 +59,39 @@ mirakel.CompanyListModel = function() {
     self.cancelCompanyChanges = function() { window.history.back() };
 
     //add new employee
-    self.addEmployee = function() { self.companyDetails().employees.push(new DTO.Employee())};
+    self.addEmployee = function() {
+        var emp = new DTO.Employee(undefined, self.companyDetails._id());
+        var empObs = ko.mapping.fromJS(emp, mirakel.mappingDirty);
+        self.companyDetails.employees.push(empObs)
+    };
 
     //remove employee
-    self.removeEmployee = function(emp) { self.companyDetails().employees.remove(emp)};
+    self.removeEmployee = mirakel.koArrayRemoveItemFunction(self.companyDetails.employees);
 
     //add new note
-    self.addNote = function() { self.companyDetails().notes.push(new DTO.Note()) };
+    self.addNote = function() {
+        var note = new DTO.Note(undefined, self.companyDetails._id());
+        var noteObs = ko.mapping.fromJS(note, mirakel.mappingDirty);
+        self.companyDetails.notes.push(noteObs) };
 
     //remove note
-    self.removeNote = function(note) { self.companyDetails().notes.remove(note) };
+    self.removeNote = mirakel.koArrayRemoveItemFunction(self.companyDetails.notes);
 
     /*REDIRECTIONS*/
-    self.goToDetail = function(company) { location.hash = 'company/'+ ((company && company._id) || 'new') };
+    self.goToDetail = function(company) { location.hash = 'company/'+ ((company && company._id()) || 'new') };
 
     /*CLIENT SIDE NAVIGATION*/
     Sammy(function() {
         //list of all companies
         this.get('#company', function() {
             self.navigation('list');
-            self.companyDetails(new DTO.Company()); //clear old company details so they will not blink before new data is loded
-            $.get("/company", {}, self.companies);
+            ko.mapping.fromJS(new DTO.Company(), self.companyDetails); //clear old company details so they will not blink before new data is loded
+            $.get("/company", {}, function(data) {ko.mapping.fromJS(data, self.companies);} );
         });
         //new company to be added
         this.get('#company/new', function() {
             self.navigation('company');
-            self.companyDetails(new DTO.Company());
+            ko.mapping.fromJS(new DTO.Company(), self.companyDetails);
         });
         //display/edit existing company
         this.get('#company/:companyId', function() {
@@ -92,23 +101,20 @@ mirakel.CompanyListModel = function() {
             //get core comany info
             $.getJSON("/company/"+companyId)
                 .done(function(company) {
-                    self.companyDetails(DTO.toKoCompany(company));
+                    ko.mapping.fromJS(company, self.companyDetails);
                     //load employees in the background
                     $.getJSON('/company/'+companyId+'/employees')
                         .done(function(employees) {
-                            ko.utils.arrayForEach(employees, function (item) {
-                                self.companyDetails().employees.push(DTO.toKoEmployee(item));
+                            ko.mapping.fromJS(employees, mirakel.mappingClean, self.companyDetails.employees);
+                            mirakel.arrayResetDirty(self.companyDetails.employees());
+                            //load notes in the background
+                            $.getJSON('/notes/'+companyId)
+                                .done(function(notes) {
+                                    ko.mapping.fromJS(notes, mirakel.mappingClean, self.companyDetails.notes);
+                                    mirakel.arrayResetDirty(self.companyDetails.notes());
+                                    self.companyDetails.dirtyFlag.reset();
                             });
-                        }
-                    );
-                    //load notes in the background
-                    $.getJSON('/notes/'+companyId)
-                        .done(function(notes) {
-                            ko.utils.arrayForEach(notes, function (item) {
-                                self.companyDetails().notes.push(DTO.toKoNote(item));
-                            });
-                        }
-                    );
+                    });
                 }
             );
         });
@@ -123,27 +129,5 @@ $('#companyTab a').click(function (e) {
     $(this).tab('show');
 });
 
-ko.bindingHandlers.datePicker = {
-    init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
-        // Register change callbacks to update the model
-        // if the control changes.
-        var picker = $(element);
-        picker.datetimepicker();
-        picker.on("dp.change",function (e) {
-            var value = valueAccessor();
-            value(picker.data("DateTimePicker").getDate().toDate());
-        });
-        //handle disposal (if KO removes by the template binding)
-        ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-            picker.data("DateTimePicker").destroy();
-        });
-    },
-    // Update the control whenever the view model changes
-    update: function (element, valueAccessor, allBindingsAccessor, viewModel) {
-        var value =  valueAccessor();
-        var picker = $(element);
-        picker.data("DateTimePicker").setDate(value());
-    }
-};
-
 ko.applyBindings(new mirakel.CompanyListModel());
+
