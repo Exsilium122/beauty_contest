@@ -1,0 +1,9 @@
+extends layout
+block content
+    //view: company list
+    include ./includes/index/companyList_plain.jade
+    //view: details for one company, employees and notes
+    include ./includes/index/companyDetails_plain.jade
+    include ./includes/yesnomodal_plain.jade
+block scriptsEndBody
+    script(src='/javascripts/app/index.js')

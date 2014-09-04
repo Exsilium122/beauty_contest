@@ -18,9 +18,10 @@ html
         script(src='/javascripts/app/mirakel.ko.extensions.js')
         script(src='/javascripts/app/dto.js')
         script(src='/javascripts/app/yesnomodal.js')
-        block scripts
+        block scriptsHead
     body
         div#header
         div#content.container
             block content
         div#footer
+        block scriptsEndBody

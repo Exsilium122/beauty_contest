@@ -11,21 +11,19 @@ mirakel.CompanyListModel = function() {
 
     /*METHODS*/
     //remove company confirmation dialog
-    self.removeCompanyQuestion = function(company) {
+    self.removeCompanyQuestion = function (company) {
         self.ynModal.openModal(
             "Confirm company removal",
             "Do you want to remove "+company.name()+" company?",
             "Cancel",
             "Remove",
-            self.removeCompany(company)
+            function () { self.removeCompany(company) }
         );
     };
     //remove company
     self.removeCompany = function(company) {
-        return function () {
-            self.companies.remove(company);
-            //TODO remove from server
-        };
+        self.companies.remove(company);
+        //TODO remove from server
     }
 
     //add new company
@@ -77,6 +75,20 @@ mirakel.CompanyListModel = function() {
     //remove note
     self.removeNote = mirakel.koArrayRemoveItemFunction(self.companyDetails.notes);
 
+    self.removeGroupItem = function removeGroupItem(element) {
+        if (element.nodeType === 1) {
+            $(element).slideUp(function() {
+               $(element).remove();
+            });
+        }
+    };
+
+    self.addGroupItem = function(element) {
+        if (element.nodeType === 1) {
+            $(element).hide().slideDown();
+        }
+    }
+
     /*REDIRECTIONS*/
     self.goToDetail = function(company) { location.hash = 'company/'+ ((company && company._id()) || 'new') };
 
@@ -90,6 +102,7 @@ mirakel.CompanyListModel = function() {
         });
         //new company to be added
         this.get('#company/new', function() {
+            $('#firstCompanyTab').tab('show');
             self.navigation('company');
             ko.mapping.fromJS(new DTO.Company(), self.companyDetails);
         });

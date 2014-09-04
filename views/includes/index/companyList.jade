@@ -1,0 +1,17 @@
+#companyList(data-bind='animatedVisible: navigation() === "list"', style='display: none;')
+    h1 Companies:
+    table.table.table-striped.table-hover
+        thead: tr
+            th Name
+            th City
+            th Phone no
+            th
+        tbody(data-bind='foreach: companies')
+            tr(data-bind='click: $root.goToDetail')
+                td(data-bind='text: name')
+                td(data-bind='text: address.city')
+                td(data-bind='text: phone')
+                td: button.close(type='button',data-bind='click: $root.removeCompanyQuestion, clickBubble: false') &times
+    button.btn.btn-default.col-sm-1(data-bind='click: addCompany')
+        span.glyphicon.glyphicon-plus
+        |  Add

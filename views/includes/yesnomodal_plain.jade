@@ -1,0 +1,14 @@
+//modal dialogs
+#yesNoModal.modal.fade(tabindex='-1',role="dialog",aria-labelledby="myModalLabel",aria-hidden='true')
+    .modal-dialog
+        .modal-content
+            .modal-header
+                button.close(type='button', data-dismiss='modal')
+                    span(aria-hidden='true') &times;
+                    span.sr-only Close
+                h4#deleteCompanyLabel(data-bind='text:ynModal.title')
+            .modal-body
+                p(data-bind='text: ynModal.message')
+            .modal-footer
+                button.cancel(type='button',data-dismiss='modal', data-bind='text: ynModal.cancelText')
+                button.approve(type='button',data-dismiss='modal',data-bind='text: ynModal.actionText, click: ynModal.actionFunc')

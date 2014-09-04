@@ -11,6 +11,8 @@ a {
     margin-top: 10px;
 }
 
+#companyDetails .input-group { margin-bottom: 7px;}
+
 #companyDetails button.save,
 #companyDetails button.cancel {
     margin-right: 10px;

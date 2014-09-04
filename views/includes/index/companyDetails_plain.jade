@@ -1,0 +1,54 @@
+#companyDetails(data-bind='animatedVisible: navigation() === "company"', style='display: none;')
+    #company
+        h2 Company details
+        .cname
+            label(for=cname) Name:
+            input#cname(type=text, data-bind='value: companyDetails.name', placeholder='Enter name')
+        .curl
+            label(for=curl) www:
+            input#curl(type=text, data-bind='value: companyDetails.url', placeholder='Enter www')
+        #caddress
+            .cstreet
+                label(for=cstreet) Street:
+                input#cstreet(type=text, data-bind='value: companyDetails.address.street', placeholder='Enter street')
+            .cstreetNo
+                label(for=cstreetNo) No:
+                input#cstreetNo(type=text, data-bind='value: companyDetails.address.streetNo', placeholder='Enter street number')
+            .capartmentNo
+                label(for=capartmentNo) Apartment:
+                input#capartmentNo(type=text, data-bind='value: companyDetails.address.apartmentNo', placeholder='Enter apartment number')
+            .ccity
+                label(for=ccity) City:
+                input#ccity(type=text, data-bind='value: companyDetails.address.city', placeholder='Enter city')
+    #employees
+        h2 Employees
+        .employees_list(data-bind='foreach: {data: companyDetails.employees, afterAdd: addGroupItem, beforeRemove: removeGroupItem}')
+            .employee(data-bind='css: {"list-group-item-warning" : isDirty}')
+                .input_container
+                    label.emp_name Name:
+                    input.emp_name(type=text, data-bind='value: name', placeholder='Enter name')
+                .input_container
+                    label.emp_title Title:
+                    input.emp_title(type=text, data-bind='value: title', placeholder='Enter title')
+                .input_container
+                    label.emp_phone Phone:
+                    input.emp_phone(type=text, data-bind='value: phoneNo', placeholder='Enter phone no')
+                .input_container
+                    label.emp_mail E-mail:
+                    input.emp_mail(type=text, data-bind='value: email', placeholder='Enter e-mail')
+                button.remove(type='button', data-bind='click: $root.removeEmployee, clickBubble: false'): span(aria-hidden='true') &times
+        button.addEmployee(data-bind='click: $root.addEmployee, clickBubble: false') Add employee
+    #notes
+        h2 Notes
+        .notes_list(data-bind='foreach: {data: companyDetails.notes, afterAdd: addGroupItem, beforeRemove: removeGroupItem}')
+            .note(data-bind='css: {"list-group-item-warning" : isDirty}')
+                .input_container
+                    label.note_date Date:
+                    input.note_date(type=text, data-bind='datePicker: date', placeholder='Enter date')
+                .input_container
+                    label.note_text Text:
+                    textarea.note_text(data-bind='value: text', placeholder='Enter note')
+                button.remove(type='button',data-bind='click: $root.removeNote, clickBubble: false'): span(aria-hidden='true') &times
+        button.addNote(data-bind='click: $root.addNote, clickBubble: false') Add note
+    button.save(type='button', data-bind='click: saveCompanyDetails, enable:companyDetails.dirtyFlag.isDirty') Save
+    button.cancel(type='button', data-bind='click: cancelCompanyChangesQuestion') Cancel

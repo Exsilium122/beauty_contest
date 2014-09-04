@@ -9,6 +9,10 @@ router.get('/', function(req, res) {
     res.render('index', { title: 'Beauty contest' });
 });
 
+router.get('/plain', function(req, res) {
+    res.render('index_plain', { title: 'Beauty contest' });
+});
+
     //get all companies from database
 router.get('/company', function(req, res) {
     db.collection('companies').find().toArray(sendJson(res));
@@ -44,7 +48,7 @@ router.get('/notes/:ownerId', function(req, res) {
     db.collection('notes').find({ ownerId:id}).toArray(sendJson(res));
 });
 
-var sendJson = function(res) {
+var sendJson = function sendJson(res) {
     return function(err, result) {
         if (err) {
             console.error(err);
