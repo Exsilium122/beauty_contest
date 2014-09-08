@@ -42,7 +42,7 @@ mirakel.CompanyListModel = function() {
         $.post('/company', pobj)
             .done(function(companyId) {
                 toastr.success("Company saved.");
-                self.goToDetail({_id: companyId});
+                self.goToCompanyList();
             })
             .fail(function() {
                 toastr.error("Company was not saved, connection error. Please try again.");
@@ -51,16 +51,18 @@ mirakel.CompanyListModel = function() {
 
     //cancel changes confirmation dialog
     self.cancelCompanyChangesQuestion = function() {
-        self.ynModal.openModal(
-            "Confirm cancellation of changes.",
-            "Do you want to cancel all the changes?",
-            "No",
-            "Yes",
-            self.cancelCompanyChanges
-        );
+        if(self.companyDetails.dirtyFlag.isDirty()) {
+            self.ynModal.openModal(
+                "Confirm cancellation of changes.",
+                "Do you want to cancel all the changes?",
+                "No",
+                "Yes",
+                self.goToCompanyList
+            );
+        } else {
+            self.goToCompanyList();
+        }
     };
-    //cancel changes
-    self.cancelCompanyChanges = function() { window.history.back() };
 
     //add new employee
     self.addEmployee = function() {
@@ -86,6 +88,7 @@ mirakel.CompanyListModel = function() {
 
     /*REDIRECTIONS*/
     self.goToDetail = function(company) { location.hash = 'company/'+ ((company && company._id()) || 'new') };
+    self.goToCompanyList = function() { location.hash = 'company' };
 
     /*CLIENT SIDE NAVIGATION*/
     Sammy(function() {
