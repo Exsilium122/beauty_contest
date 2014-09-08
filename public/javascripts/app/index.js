@@ -6,7 +6,6 @@ mirakel.CompanyListModel = function() {
     self.companies = ko.mapping.fromJS([]);
     self.companyDetails = ko.mapping.fromJS(new DTO.Company(), mirakel.mappingClean);
     self.navigation = ko.observable('');
-
     self.ynModal = new YnModal();
 
     /*METHODS*/
@@ -22,8 +21,14 @@ mirakel.CompanyListModel = function() {
     };
     //remove company
     self.removeCompany = function(company) {
-        self.companies.remove(company);
-        //TODO remove from server
+        $.delete_('/company/'+company._id())
+            .done(function() {
+                self.companies.remove(company);
+                toastr.info('Company deleted.');
+            })
+            .fail(function() {
+               toastr.error('Connection problem occcured while deleting company.');
+            });
     }
 
     //add new company
@@ -35,11 +40,12 @@ mirakel.CompanyListModel = function() {
         pobj.notes = mirakel.arrayFilterChangedItems(pobj.notes);
         pobj.employees = mirakel.arrayFilterChangedItems(pobj.employees);
         $.post('/company', pobj)
-            .done(function() {
-                alert( "second success" );
+            .done(function(companyId) {
+                toastr.success("Company saved.");
+                self.goToDetail({_id: companyId});
             })
             .fail(function() {
-                alert( "error" );
+                toastr.error("Company was not saved, connection error. Please try again.");
             });
     };
 
@@ -60,34 +66,23 @@ mirakel.CompanyListModel = function() {
     self.addEmployee = function() {
         var emp = new DTO.Employee(undefined, self.companyDetails._id());
         var empObs = ko.mapping.fromJS(emp, mirakel.mappingDirty);
-        self.companyDetails.employees.push(empObs)
+        self.companyDetails.employees.push(empObs);
+        toastr.info("Empty employee added.");
     };
 
     //remove employee
-    self.removeEmployee = mirakel.koArrayRemoveItemFunction(self.companyDetails.employees);
+    self.removeEmployee = mirakel.koArrayRemoveItemFunction(self.companyDetails.employees, "Employee was removed!");
 
     //add new note
     self.addNote = function() {
         var note = new DTO.Note(undefined, self.companyDetails._id());
         var noteObs = ko.mapping.fromJS(note, mirakel.mappingDirty);
-        self.companyDetails.notes.push(noteObs) };
-
-    //remove note
-    self.removeNote = mirakel.koArrayRemoveItemFunction(self.companyDetails.notes);
-
-    self.removeGroupItem = function removeGroupItem(element) {
-        if (element.nodeType === 1) {
-            $(element).slideUp(function() {
-               $(element).remove();
-            });
-        }
+        self.companyDetails.notes.push(noteObs);
+        toastr.info("Empty note added.");
     };
 
-    self.addGroupItem = function(element) {
-        if (element.nodeType === 1) {
-            $(element).hide().slideDown();
-        }
-    }
+    //remove note
+    self.removeNote = mirakel.koArrayRemoveItemFunction(self.companyDetails.notes, "Note was removed!");
 
     /*REDIRECTIONS*/
     self.goToDetail = function(company) { location.hash = 'company/'+ ((company && company._id()) || 'new') };
@@ -98,7 +93,13 @@ mirakel.CompanyListModel = function() {
         this.get('#company', function() {
             ko.mapping.fromJS(new DTO.Company(), self.companyDetails); //clear old company details so they will not blink before new data is loded
             self.navigation('list');
-            $.get("/company", {}, function(data) {ko.mapping.fromJS(data, self.companies);} );
+            $.get("/company")
+                .done(function(data) {
+                    ko.mapping.fromJS(data, self.companies);
+                })
+                .fail(function() {
+                    toastr.error("Company list was not retrieved. Please try again.");
+                });
         });
         //new company to be added
         this.get('#company/new', function() {
@@ -126,10 +127,18 @@ mirakel.CompanyListModel = function() {
                                     ko.mapping.fromJS(notes, mirakel.mappingClean, self.companyDetails.notes);
                                     mirakel.arrayResetDirty(self.companyDetails.notes());
                                     self.companyDetails.dirtyFlag.reset();
+                            })
+                            .fail(function() {
+                                toastr.error("Notes list was not retrieved. Please try again.");
                             });
+                    })
+                    .fail(function() {
+                        toastr.error("Employees list was not retrieved.. Please try again.");
                     });
-                }
-            );
+                })
+                .fail(function() {
+                    toastr.error("Company details were not retrieved. Please try again.");
+                });
         });
         this.get('', function() { this.app.runRoute('get', '#company') });
     }).run();
@@ -141,7 +150,6 @@ $('#companyTab a').click(function (e) {
     e.preventDefault();
     $(this).tab('show');
 });
-//TweenLite.set($('#animContent'), {perspective:700});
 
 ko.applyBindings(new mirakel.CompanyListModel());
 

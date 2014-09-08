@@ -80,6 +80,22 @@ ko.bindingHandlers.animatedVisible = {
     }
 };
 
+
+//additionals for KO
+mirakel.removeGroupItem = function removeGroupItem(element) {
+    if (element.nodeType === 1) {
+        $(element).slideUp(function() {
+            $(element).remove();
+        });
+    }
+};
+
+mirakel.addGroupItem = function(element) {
+    if (element.nodeType === 1) {
+        $(element).hide().slideDown();
+    }
+};
+
 //custom mappings
 (function() {
     /**
@@ -179,9 +195,12 @@ ko.bindingHandlers.animatedVisible = {
      * @param arr - observable array to be processed
      * @returns {Function} - curly function which accepts item as parameter
      */
-    mirakel.koArrayRemoveItemFunction = function(arr) {
+    mirakel.koArrayRemoveItemFunction = function(arr, message) {
         return function (item) {
             mirakel.koArrayRemoveItem(arr, item);
+            if(message && toastr) {
+                toastr.warning(message);
+            }
         };
     };
 
@@ -195,3 +214,21 @@ ko.bindingHandlers.animatedVisible = {
 
 })();
 
+//Utilities
+jQuery.each( [ "put", "delete_" ], function( i, method ) {
+    jQuery[ method ] = function( url, data, callback, type ) {
+        if ( jQuery.isFunction( data ) ) {
+            type = type || callback;
+            callback = data;
+            data = undefined;
+        }
+
+        return jQuery.ajax({
+            url: url,
+            type: method.replace(/_/g, ''),
+            dataType: type,
+            data: data,
+            success: callback
+        });
+    };
+});

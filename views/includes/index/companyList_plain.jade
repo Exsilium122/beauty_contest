@@ -4,12 +4,10 @@
         thead: tr
             th Name
             th City
-            th Phone no
             th
         tbody(data-bind='foreach: companies')
             tr(data-bind='click: $root.goToDetail')
                 td.comapny_name(data-bind='text: name')
                 td.company_address(data-bind='text: address.city')
-                td.company_phone(data-bind='text: phone')
                 td: button.company_remove(type='button',data-bind='click: $root.removeCompany, clickBubble: false') &times
     button.add_company(data-bind='click: addCompany') Add

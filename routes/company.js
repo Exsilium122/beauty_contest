@@ -8,7 +8,7 @@ var ObjectId = require('../custom_modules/beautydb.js').ObjectID;
 router.get('/', function(req, res) {
     res.render('index', { title: 'Beauty contest' });
 });
-
+//get plain version of homepage
 router.get('/plain', function(req, res) {
     res.render('index_plain', { title: 'Beauty contest' });
 });
@@ -19,20 +19,67 @@ router.get('/company', function(req, res) {
 });
 
 router.post('/company', function(req, res) {
-//        var result = db.collection('companies').save(req.body);
-//        res.json(result);
     var company = req.body;
     var notes = company.notes;
-    for (var i=0; i<notes.length; i++) {
+    var employees = company.employees;
+
+    //convert string date into real date
+    for (var i=0; notes && i<notes.length; i++) {
         notes[i].date = new Date(notes[i].date);
     }
-    res.json(req.body);
+    delete company.notes;
+    delete company.employees;
+    delete company.isDirty;
+
+    var id;
+    if(company._id) {
+        id = db.collection('companies').updateById({_id: ObjectId.createFromHexString(company._id)}, company, function(err, result) {
+            if (err) throw err;
+            res.send(company._id);
+        });
+    } else {
+        id = db.collection('companies').insert(company, function(err, result) {
+            if (err) throw err;
+            res.send(result[0]._id);
+        });
+    }
+    processArray(notes, 'notes');
+    processArray(employees, 'employees');
+
 });
+
+var processArray = function(arr, collection) {
+    for (var i=0; arr && i<arr.length; i++) {
+        var item = arr[i];
+        if(item._destroy) {
+            db.collection(collection).remove({_id: ObjectId.createFromHexString(item._id)});
+        } else {
+            delete item.isDirty;
+            if(item._id) {
+                db.collection(collection).updateById({_id: ObjectId.createFromHexString(item._id)}, item, function(err, result) {
+                    if (err) throw err;
+                });
+            } else {
+                db.collection(collection).insert({_id: ObjectId.createFromHexString(item._id)}, item, function(err, result) {
+                    if (err) throw err;
+                });
+            }
+        }
+    }
+};
 
     //get one company
 router.get('/company/:companyId', function(req, res) {
     var id = ObjectId.createFromHexString(req.params.companyId);
     db.collection('companies').findOne({ _id : id}, sendJson(res));
+});
+
+router.delete('/company/:companyId', function(req, res) {
+    var id = ObjectId.createFromHexString(req.params.companyId);
+    db.collection('companies').remove({ _id : id});
+    db.collection('notes').remove({ ownerId : id});
+    db.collection('employees').remove({ companyId : id});
+    res.send('Ok');
 });
 
 

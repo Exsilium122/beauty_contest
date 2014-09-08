@@ -22,7 +22,7 @@
                 input#ccity(type=text, data-bind='value: companyDetails.address.city', placeholder='Enter city')
     #employees
         h2 Employees
-        .employees_list(data-bind='foreach: {data: companyDetails.employees, afterAdd: addGroupItem, beforeRemove: removeGroupItem}')
+        .employees_list(data-bind='foreach: {data: companyDetails.employees, afterAdd: mirakel.addGroupItem, beforeRemove: mirakel.removeGroupItem}')
             .employee(data-bind='css: {"list-group-item-warning" : isDirty}')
                 .input_container
                     label.emp_name Name:
@@ -40,7 +40,7 @@
         button.addEmployee(data-bind='click: $root.addEmployee, clickBubble: false') Add employee
     #notes
         h2 Notes
-        .notes_list(data-bind='foreach: {data: companyDetails.notes, afterAdd: addGroupItem, beforeRemove: removeGroupItem}')
+        .notes_list(data-bind='foreach: {data: companyDetails.notes, afterAdd: mirakel.addGroupItem, beforeRemove: mirakel.removeGroupItem}')
             .note(data-bind='css: {"list-group-item-warning" : isDirty}')
                 .input_container
                     label.note_date Date:
