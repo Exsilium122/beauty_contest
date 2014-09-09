@@ -3,7 +3,7 @@ var ObjectId = require('../custom_modules/beautydb.js').ObjectID;
 var DTO = require('../public/javascripts/app/dto.js');
 
 exports.getAllCompanies = function(handler) {
-    db.collection('companies').find().toArray(handler);
+    db.collection('companies').find().sort( {name : 1} ).toArray(handler);
 };
 
 exports.saveCompany = function(company, handler) {
@@ -21,9 +21,9 @@ exports.saveCompany = function(company, handler) {
     delete company.employees;
     delete company.isDirty;
 
-    processChildren = function (handler) {
-        processArray(notes, 'notes', function () {
-            processArray(employees, 'employees', handler);
+    processChildren = function (handler, defaultParentId) {
+        processArray(notes, 'notes', defaultParentId, function () {
+            processArray(employees, 'employees', defaultParentId, handler);
         });
     };
     if(company._id) {
@@ -32,18 +32,19 @@ exports.saveCompany = function(company, handler) {
         db.collection('companies').updateById(id, company, getErrorHandler(function() {
             processChildren(function() {
                 handler(id);
-            });
+            }, id);
         }));
     } else {
         db.collection('companies').insert(company, getErrorHandler(function(result) {
+            var id = result[0]._id;
             processChildren(function() {
-                handler(result[0]._id);
-            });
+                handler(id);
+            }, id);
         }));
     }
 };
 
-var processArray = function(arr, collection, handler) {
+var processArray = function(arr, collection, defaultParentId, handler) {
     if(arr) {
         for (var i = 0; i < arr.length; i++) {
             var item = arr[i];
@@ -53,7 +54,13 @@ var processArray = function(arr, collection, handler) {
                 delete item.isDirty;
                 var ownerId = (item.companyId ? 'companyId' : (item.ownerId ? 'ownerId' : undefined));
                 if(ownerId) {
-                    item[ownerId] =  ObjectId.createFromHexString(item[ownerId]);
+                    if(typeof item[ownerId] === 'string') {
+                        item[ownerId] = ObjectId.createFromHexString(item[ownerId]);
+                    }
+                } else if (collection === 'notes') {
+                    item.ownerId = defaultParentId;
+                } else if (collection === 'employees') {
+                    item.companyId = defaultParentId;
                 }
                 if (item._id) {
                     var id = item._id;
@@ -85,7 +92,7 @@ exports.getCompanyDetails = function(companyId, handler) {
 
 exports.getAllEmployeesForCompany = function(companyId, handler) {
     var id = ObjectId.createFromHexString(companyId);
-    db.collection('employees').find({ companyId : id }).toArray(handler);
+    db.collection('employees').find({ companyId : id }).sort( {name : 1} ).toArray(handler);
 }
 
 exports.getAllNotesForOwner = function(ownerId, handler) {

@@ -1,0 +1,8 @@
+{
+    "development": {
+        "db_url": "mongodb://localhost:27017/beauty"
+    },
+    "test": {
+        "db_url": "mongodb://localhost:27017/test"
+    }
+}

@@ -1,19 +1,27 @@
 {
-  "name": "mirakel",
-  "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "start": "node ./bin/www"
-  },
-  "dependencies": {
-    "express": "~4.2.0",
-    "static-favicon": "~1.0.0",
-    "morgan": "~1.0.0",
-    "cookie-parser": "~1.0.1",
-    "body-parser": "~1.0.0",
-    "debug": "~0.7.4",
-    "jade": "~1.3.0",
-    "mongodb": "*",
-    "mongoskin": "*"
-  }
+    "name": "mirakel",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start": "node ./bin/www"
+    },
+    "dependencies": {
+        "express": "~4.2.0",
+        "static-favicon": "~1.0.0",
+        "morgan": "~1.0.0",
+        "cookie-parser": "~1.0.1",
+        "body-parser": "~1.0.0",
+        "debug": "~0.7.4",
+        "jade": "~1.3.0",
+        "mongodb": "*",
+        "mongoskin": "*"
+    },
+    "devDependencies": {
+        "mocha": "1.4.x",
+        "zombie": "1.4.x"
+    },
+    "scripts": {
+        "test": "mocha tests/behavioral/companyList tests/server/companyLogic",
+        "start": "node app.js"
+    }
 }
